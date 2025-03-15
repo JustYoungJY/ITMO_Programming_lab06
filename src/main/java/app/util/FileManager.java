@@ -6,6 +6,8 @@ import com.fasterxml.jackson.dataformat.xml.XmlMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.TreeMap;
 
 /**
@@ -21,7 +23,7 @@ public class FileManager {
     public FileManager(String fileName) {
         this.fileName = fileName;
         // Создаем XmlMapper для работы с XML
-        xmlMapper = new XmlMapper();
+        this.xmlMapper = new XmlMapper();
         // Регистрируем модуль для поддержки Java Time (например, ZonedDateTime)
         xmlMapper.registerModule(new JavaTimeModule());
         // Отключаем запись дат в виде числовых таймштампов (будут в ISO-формате)
@@ -35,23 +37,30 @@ public class FileManager {
         if (!file.exists()) {
             return new TreeMap<>();
         }
-        // Десериализуем XML в объект CollectionWrapper
-        CollectionWrapper wrapper = xmlMapper.readValue(file, CollectionWrapper.class);
-        // Преобразуем обертку обратно в TreeMap
-        return wrapper.toMap();
+        // Считываем весь список из XML
+        HumanBeingListWrapper wrapper = xmlMapper.readValue(file, HumanBeingListWrapper.class);
+
+        // Перекладываем в TreeMap, ключ = h.getId()
+        TreeMap<Long, HumanBeing> map = new TreeMap<>();
+        for (HumanBeing h : wrapper.HumanBeing) {
+            map.put(h.getId(), h);
+        }
+        return map;
     }
 
-    public void saveCollection(TreeMap<Long, HumanBeing> collection) throws Exception {
-        // Оборачиваем карту в CollectionWrapper
-        CollectionWrapper wrapper = new CollectionWrapper(collection);
+    public void saveCollection(TreeMap<Long, HumanBeing> map) throws Exception {
+        // Превращаем map.values() в список
+        List<HumanBeing> list = new ArrayList<>(map.values());
+        HumanBeingListWrapper wrapper = new HumanBeingListWrapper(list);
+
         File file = new File(fileName);
-        File parentDir = file.getParentFile();
-        if (parentDir != null && !parentDir.exists()) {
-            if (!parentDir.mkdirs()) {
-                throw new Exception("Failed to create directory: " + parentDir.getAbsolutePath());
+        File parent = file.getParentFile();
+        if (parent != null && !parent.exists()) {
+            if (!parent.mkdirs()) {
+                throw new Exception("Failed to create directory: " + parent.getAbsolutePath());
             }
         }
-        // Сериализуем обертку в XML и записываем в файл
+        // Записываем в XML
         xmlMapper.writeValue(file, wrapper);
     }
 }

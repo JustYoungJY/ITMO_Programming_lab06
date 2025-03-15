@@ -22,9 +22,9 @@ public class SaveCommand implements Command {
     public Response execute(Request request) {
         try {
             fileManager.saveCollection(collectionManager.getCollection());
-            return new Response("Collection saved to file", null, null);
+            return new Response("Collection saved to file");
         } catch (Exception e) {
-            return new Response("Error saving collection: " + e.getMessage(), null, null);
+            return new Response("Error saving collection: " + e.getMessage());
         }
     }
 

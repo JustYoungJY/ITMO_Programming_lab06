@@ -22,7 +22,7 @@ public class HelpCommand implements Command {
         for (Command command : invoker.getCommands()) {
             sj.add(" - " + command.getName() + ": " + command.getDescription());
         }
-        return new Response(sj.toString(), null, null);
+        return new Response(sj.toString());
     }
 
     @Override

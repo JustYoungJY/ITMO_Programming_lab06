@@ -7,7 +7,6 @@ import app.transfer.Response;
  * exit command: ends the program.
  */
 public class ExitCommand implements Command {
-
     @Override
     public Response execute(Request request) {
         System.exit(0);

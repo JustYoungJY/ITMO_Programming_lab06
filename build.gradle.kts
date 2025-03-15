@@ -1,6 +1,7 @@
 plugins {
     id("java")
     application
+    id("com.github.johnrengelman.shadow") version "7.1.2"
 }
 
 group = "app"
@@ -26,4 +27,8 @@ tasks.test {
 
 application {
     mainClass.set("app.Main")
+}
+
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    archiveClassifier.set("") // чтобы итоговый jar был без "-all" и прочего
 }

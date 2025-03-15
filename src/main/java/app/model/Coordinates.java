@@ -9,7 +9,7 @@ public class Coordinates {
     private final Double x;
     private final long y;
 
-    public Coordinates(@JsonProperty("x")Double x, @JsonProperty("y")long y) {
+    public Coordinates(@JsonProperty("x") Double x, @JsonProperty("y") long y) {
         if (x == null) throw new IllegalArgumentException("x cannot be null");
         if (y > 207) throw new IllegalArgumentException("y must not exceed 207");
         this.x = x;

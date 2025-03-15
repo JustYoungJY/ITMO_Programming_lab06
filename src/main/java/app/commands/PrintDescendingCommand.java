@@ -18,13 +18,13 @@ public class PrintDescendingCommand implements Command {
     @Override
     public Response execute(Request request) {
         if (collectionManager.getCollection().isEmpty()) {
-            new Response("Collection is empty", null, null);
+            return new Response("Collection is empty");
         }
         StringBuilder sb = new StringBuilder();
         for (HumanBeing human : collectionManager.getElementsDescending()) {
             sb.append(human).append("\n");
         }
-        return new Response(sb.toString(), null, null);
+        return new Response(sb.toString());
     }
 
     @Override

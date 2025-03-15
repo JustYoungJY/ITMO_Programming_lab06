@@ -4,9 +4,10 @@ import app.transfer.Request;
 import app.transfer.Response;
 import app.util.InputReader;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.util.Collections;
+import java.util.Scanner;
 
 /**
  * execute_script command: Reads and executes a script from the specified file.
@@ -28,14 +29,25 @@ public class ExecuteScriptCommand implements Command {
         } else {
             fileName = reader.prompt("Enter script file name: ");
         }
-        try (BufferedReader br = new BufferedReader(new FileReader(fileName))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                invoker.executeCommand(new Request(line.trim(), Collections.emptyList(), Collections.emptyList()));
+        // Сохраняем оригинальный Scanner
+        Scanner originalScanner = reader.getScanner();
+        try (Scanner scriptScanner = new Scanner(new File(fileName))) {
+            // Заменяем Scanner в InputReader на тот, что читает из файла
+            reader.setScanner(scriptScanner);
+            while (scriptScanner.hasNextLine()) {
+                String line = scriptScanner.nextLine().trim();
+                if (line.isEmpty()) {
+                    continue;
+                }
+                Response r = invoker.executeCommand(new Request(line, Collections.emptyList(), Collections.emptyList()));
+                System.out.println(r.message());
             }
-            return new Response("Script executed", null, null);
-        } catch (Exception e) {
-            return new Response("Error executing script: " + e.getMessage(), null, null);
+            return new Response("Script executed");
+        } catch (FileNotFoundException e) {
+            return new Response("Error: Script file not found.");
+        } finally {
+            // Восстанавливаем оригинальный Scanner, чтобы интерактивный режим снова работал
+            reader.setScanner(originalScanner);
         }
     }
 

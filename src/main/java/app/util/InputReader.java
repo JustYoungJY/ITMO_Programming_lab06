@@ -7,7 +7,7 @@ import java.util.Scanner;
  */
 public class InputReader {
 
-    private final Scanner scanner;
+    private Scanner scanner;
 
     public InputReader(Scanner scanner) {
         this.scanner = scanner;
@@ -20,5 +20,13 @@ public class InputReader {
     public String prompt(String prompt) {
         System.out.print(prompt);
         return readLine();
+    }
+
+    public Scanner getScanner() {
+        return scanner;
+    }
+
+    public void setScanner(Scanner scanner) {
+        this.scanner = scanner;
     }
 }

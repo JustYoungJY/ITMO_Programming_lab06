@@ -9,7 +9,7 @@ public class Car {
 
     private final boolean cool;
 
-    public Car(@JsonProperty("cool")boolean cool) {
+    public Car(@JsonProperty("cool") boolean cool) {
         this.cool = cool;
     }
 

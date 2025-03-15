@@ -21,12 +21,12 @@ public class CommandInvoker {
         String commandName = request.command().toLowerCase();
         Command command = commands.get(commandName);
         if (command == null) {
-            return new Response("Unknown command", null, null);
+            return new Response("Unknown command");
         }
         try {
             return command.execute(request);
         } catch (Exception e) {
-            return new Response("Error executing command: " + e.getMessage(), null, null);
+            return new Response("Error executing command: " + e.getMessage());
         }
     }
 

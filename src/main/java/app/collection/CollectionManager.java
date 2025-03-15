@@ -11,8 +11,8 @@ import java.util.TreeMap;
  * The collection is contained in a TreeMap, so it`s sorted by key.
  */
 public class CollectionManager<T extends HumanBeing> {
-    private TreeMap<Long, T> collection;
     private final ZonedDateTime initDate;
+    private TreeMap<Long, T> collection;
 
     public CollectionManager() {
         this.collection = new TreeMap<>();
@@ -27,23 +27,21 @@ public class CollectionManager<T extends HumanBeing> {
         this.collection = collection;
     }
 
-    public void insert(Long key, T element) {
-        collection.put(key, element);
+    public void insert(T element) {
+        collection.put(element.getId(), element);
     }
 
     public boolean updateById(long id, T newElement) {
-        for (Long key : collection.keySet()) {
-            T element = collection.get(key);
-            if (element.getId() == id) {
-                collection.put(key, newElement);
-                return true;
-            }
+        // Если запись с данным id существует, заменяем её
+        if (collection.containsKey(id)) {
+            collection.put(id, newElement);
+            return true;
         }
         return false;
     }
 
-    public T removeKey(Long key) {
-        return collection.remove(key);
+    public T removeById(Long id) {
+        return collection.remove(id);
     }
 
     public void clear() {

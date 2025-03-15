@@ -4,7 +4,6 @@ import app.model.*;
 import app.util.InputReader;
 
 import java.time.ZonedDateTime;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Function;
 
 /**
@@ -12,21 +11,20 @@ import java.util.function.Function;
  * When called, createHumanBeing() prompts the user for fields.
  */
 public class HumanBeingFactory {
-    private static final AtomicLong idGenerator = new AtomicLong(1);
     private final InputReader reader;
 
     public HumanBeingFactory(InputReader reader) {
         this.reader = reader;
     }
 
-    private <T> T readField(String prompt, Function<String, T> function, boolean allowNull) {
+    private <T> T readField(String prompt, Function<String, T> parser, boolean allowNull) {
         while (true) {
             String input = reader.prompt(prompt + ": ");
-            if (allowNull && input.isEmpty()) {
+            if (input.isBlank() && allowNull) {
                 return null;
             }
             try {
-                return function.apply(input);
+                return parser.apply(input);
             } catch (Exception e) {
                 System.out.println("Error: " + e.getMessage() + ". Please try again.");
             }
@@ -35,11 +33,15 @@ public class HumanBeingFactory {
 
     public HumanBeing createHumanBeing() {
         HumanBeing human = new HumanBeing();
-        // Automatically generated fields
-        human.setId(idGenerator.getAndIncrement());
+
+        Long userId = readField("Enter id (long, must be > 0)", Long::valueOf, false);
+        if (userId <= 0) {
+            throw new IllegalArgumentException("id must be > 0");
+        }
+        human.setId(userId);
+
         human.setCreationDate(ZonedDateTime.now());
 
-        // Read required fields with validation
         human.setName(readField("Enter name", s -> {
             if (s.trim().isEmpty()) throw new IllegalArgumentException("Name cannot be empty");
             return s;

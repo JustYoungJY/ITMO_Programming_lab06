@@ -18,12 +18,12 @@ public class AverageOfImpactSpeedCommand implements Command {
     @Override
     public Response execute(Request request) {
         if (collectionManager.getCollection().isEmpty()) {
-            return new Response("Collection is empty", null, null);
+            return new Response("Collection is empty");
         }
         double avg = collectionManager.getCollection().values().stream()
                 .mapToInt(HumanBeing::getImpactSpeed)
                 .average().orElse(0);
-        return new Response("Average impactSpeed: " + avg, null, null);
+        return new Response("Average impactSpeed: " + avg);
     }
 
     @Override

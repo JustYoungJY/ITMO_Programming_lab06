@@ -27,7 +27,7 @@ public class RemoveLowerCommand implements Command {
         int initialSize = collectionManager.getCollection().size();
         collectionManager.getCollection().values().removeIf(human -> human.compareTo(reference) < 0);
         int removed = initialSize - collectionManager.getCollection().size();
-        return new Response(removed + "items removed", null, null);
+        return new Response(removed + " items removed");
     }
 
     @Override

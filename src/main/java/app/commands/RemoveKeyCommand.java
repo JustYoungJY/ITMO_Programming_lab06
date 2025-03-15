@@ -6,6 +6,8 @@ import app.transfer.Request;
 import app.transfer.Response;
 import app.util.InputReader;
 
+import java.util.List;
+
 /**
  * remove_key command: removes an element from a collection based on the given key.
  */
@@ -20,22 +22,23 @@ public class RemoveKeyCommand implements Command {
 
     @Override
     public Response execute(Request request) {
-        String keyStr;
-        if (request.args().isEmpty()) {
-            keyStr = request.args().get(0);
+        List<String> args = request.args();
+        String idStr;
+        if (!args.isEmpty()) {
+            idStr = args.get(0);
         } else {
-            keyStr = reader.prompt("Enter key to remove: ");
+            idStr = reader.prompt("Enter id to remove: ");
         }
         try {
-            Long key = Long.parseLong(keyStr);
-            HumanBeing removed = collectionManager.removeKey(key);
+            Long id = Long.parseLong(idStr);
+            HumanBeing removed = collectionManager.removeById(id);
             if (removed != null) {
-                return new Response("Item removed", null, null);
+                return new Response("Item removed");
             } else {
-                return new Response("Element with this key not found", null, null);
+                return new Response("Element with this id not found");
             }
         } catch (NumberFormatException e) {
-            return new Response("The key must be a number", null, null);
+            return new Response("The id must be a number");
         }
     }
 

@@ -26,27 +26,31 @@ public class ReplaceIfGreaterCommand implements Command {
     @Override
     public Response execute(Request request) {
         List<String> args = request.args();
-        String keyStr;
+        String oldIdStr;
         if (!args.isEmpty()) {
-            keyStr = args.get(0);
+            oldIdStr = args.get(0);
         } else {
-            keyStr = reader.prompt("Enter key for replacement: ");
+            oldIdStr = reader.prompt("Enter id of the old element to replace: ");
         }
         try {
-            Long key = Long.parseLong(keyStr);
-            HumanBeing current = collectionManager.getCollection().get(key);
-            if (current == null) {
-                return new Response("Element with this key not found", null, null);
+            Long oldId = Long.parseLong(oldIdStr);
+            HumanBeing oldHuman = collectionManager.getCollection().get(oldId);
+            if (oldHuman == null) {
+                return new Response("Element with id=" + oldId + " not found");
             }
             HumanBeing newHuman = factory.createHumanBeing();
-            if (newHuman.compareTo(current) > 0) {
-                collectionManager.getCollection().put(key, newHuman);
-                return new Response("Element replaced successfully", null, null);
+
+            if (newHuman.getId() > oldHuman.getId()) {
+                collectionManager.getCollection().remove(oldId);
+                collectionManager.getCollection().put(newHuman.getId(), newHuman);
+                return new Response("Element replaced successfully, because new id "
+                        + newHuman.getId() + " > old id " + oldHuman.getId());
             } else {
-                return new Response("The new element is not greater than the existing one", null, null);
+                return new Response("The new element's id (" + newHuman.getId()
+                        + ") is not greater than the old id (" + oldHuman.getId() + ")");
             }
         } catch (NumberFormatException e) {
-            return new Response("The key must be a number", null, null);
+            return new Response("The old id must be a number");
         }
     }
 
@@ -57,6 +61,6 @@ public class ReplaceIfGreaterCommand implements Command {
 
     @Override
     public String getDescription() {
-        return "Заменить значение по ключу, если новое значение больше старого";
+        return "Replace the element if the new element is greater than the current one";
     }
 }

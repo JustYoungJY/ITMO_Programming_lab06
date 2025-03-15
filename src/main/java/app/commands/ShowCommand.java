@@ -9,7 +9,7 @@ import app.transfer.Response;
  * show command: Displays all the elements of a collection in string representation.
  */
 public class ShowCommand implements Command {
-    CollectionManager<HumanBeing> collectionManager;
+    private final CollectionManager<HumanBeing> collectionManager;
 
     public ShowCommand(CollectionManager<HumanBeing> collectionManager) {
         this.collectionManager = collectionManager;
@@ -18,13 +18,13 @@ public class ShowCommand implements Command {
     @Override
     public Response execute(Request request) {
         if (collectionManager.getElements().isEmpty()) {
-            return new Response("Collection is empty", null, null);
+            return new Response("Collection is empty");
         }
-        StringBuffer sb = new StringBuffer();
+        StringBuilder sb = new StringBuilder();
         for (HumanBeing human : collectionManager.getElements()) {
             sb.append(human).append("\n");
         }
-        return new Response(sb.toString(), null, null);
+        return new Response(sb.toString());
     }
 
     @Override

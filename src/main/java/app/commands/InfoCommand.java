@@ -16,7 +16,7 @@ public class InfoCommand implements Command {
 
     @Override
     public Response execute(Request request) {
-        return new Response(collectionManager.info(), null, null);
+        return new Response(collectionManager.info());
     }
 
     @Override

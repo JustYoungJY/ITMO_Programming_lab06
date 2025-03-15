@@ -32,14 +32,16 @@ public class UpdateCommand implements Command {
         try {
             long id = Long.parseLong(idStr);
             HumanBeing newHuman = factory.createHumanBeing();
-            boolean update = collectionManager.updateById(id, newHuman);
-            if (update) {
-                return new Response("Element updated successfully", null, null);
+            // Если в обновляемом объекте введенный id не совпадает с ключом, то принудительно устанавливаем его
+            newHuman.setId(id);
+            boolean updated = collectionManager.updateById(id, newHuman);
+            if (updated) {
+                return new Response("Element updated successfully");
             } else {
-                return new Response("Element with this id not found", null, null);
+                return new Response("Element with this id not found");
             }
         } catch (NumberFormatException e) {
-            return new Response("Id must be a number", null, null);
+            return new Response("Id must be a number");
         }
     }
 

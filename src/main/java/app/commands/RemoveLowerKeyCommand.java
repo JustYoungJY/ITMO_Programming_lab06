@@ -34,9 +34,9 @@ public class RemoveLowerKeyCommand implements Command {
             int initialSize = collectionManager.getCollection().size();
             collectionManager.getCollection().keySet().removeIf(key -> key < threshold);
             int removed = initialSize - collectionManager.getCollection().size();
-            return new Response(removed + "items removed", null, null);
+            return new Response(removed + " items removed");
         } catch (NumberFormatException e) {
-            return new Response("The key must be a number", null, null);
+            return new Response("The key must be a number");
         }
     }
 
