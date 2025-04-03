@@ -1,0 +1,15 @@
+insert
+3w
+John
+12.5
+100
+true
+false
+50
+Epic Sound
+AXE
+CALM
+true
+
+info
+show
