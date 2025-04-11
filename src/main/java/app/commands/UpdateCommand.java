@@ -7,41 +7,30 @@ import app.transfer.Request;
 import app.transfer.Response;
 import app.util.InputReader;
 
+import java.util.List;
+
 /**
  * update command: updates the value of a collection element whose id is equal to the specified one.
  */
 public class UpdateCommand implements Command {
     private final CollectionManager<HumanBeing> collectionManager;
-    private final InputReader reader;
-    private final HumanBeingFactory factory;
 
-    public UpdateCommand(CollectionManager<HumanBeing> collectionManager, HumanBeingFactory factory, InputReader reader) {
+    public UpdateCommand(CollectionManager<HumanBeing> collectionManager) {
         this.collectionManager = collectionManager;
-        this.reader = reader;
-        this.factory = factory;
     }
 
     @Override
     public Response execute(Request request) {
-        String idStr;
-        if (!request.args().isEmpty()) {
-            idStr = request.args().get(0);
-        } else {
-            idStr = reader.prompt("Enter id of element to update: ");
+        HumanBeing newHuman = request.data();
+        if (newHuman == null) {
+            return new Response("Error: no HumanBeing object provided for update.");
         }
-        try {
-            long id = Long.parseLong(idStr);
-            HumanBeing newHuman = factory.createHumanBeing();
-            // Если в обновляемом объекте введенный id не совпадает с ключом, то принудительно устанавливаем его
-            newHuman.setId(id);
-            boolean updated = collectionManager.updateById(id, newHuman);
-            if (updated) {
-                return new Response("Element updated successfully");
-            } else {
-                return new Response("Element with this id not found");
-            }
-        } catch (NumberFormatException e) {
-            return new Response("Id must be a number");
+        long id = newHuman.getId();
+        boolean updated = collectionManager.updateById(id, newHuman);
+        if (updated) {
+            return new Response("Element updated successfully");
+        } else {
+            return new Response("Element with id " + id + " not found");
         }
     }
 
@@ -52,6 +41,6 @@ public class UpdateCommand implements Command {
 
     @Override
     public String getDescription() {
-        return "update the value of a collection element whose id is equal to a given one";
+        return "Update the element in the collection with the provided HumanBeing";
     }
 }

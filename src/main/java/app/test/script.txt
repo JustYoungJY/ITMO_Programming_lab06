@@ -1,5 +1,5 @@
 insert
-3w
+3
 John
 12.5
 100

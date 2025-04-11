@@ -7,5 +7,5 @@ import java.util.List;
 /**
  * Request record encapsulates the command to execute.
  */
-public record Request(String command, List<String> args, List<HumanBeing> persons) {
+public record Request(String command, List<String> args, HumanBeing data) {
 }

@@ -29,24 +29,26 @@ public class ExecuteScriptCommand implements Command {
         } else {
             fileName = reader.prompt("Enter script file name: ");
         }
-        // Сохраняем оригинальный Scanner
+
         Scanner originalScanner = reader.getScanner();
         try (Scanner scriptScanner = new Scanner(new File(fileName))) {
-            // Заменяем Scanner в InputReader на тот, что читает из файла
             reader.setScanner(scriptScanner);
             while (scriptScanner.hasNextLine()) {
                 String line = scriptScanner.nextLine().trim();
                 if (line.isEmpty()) {
                     continue;
                 }
-                Response r = invoker.executeCommand(new Request(line, Collections.emptyList(), Collections.emptyList()));
+                // Если в скрипте просто 'insert', на самом деле нужно HumanBeing?
+                // Но нет, скрипт "insert" без объекта = ошибка
+                // Либо дополнительно обрабатывайте.
+                Request cmdReq = new Request(line, java.util.Collections.emptyList(), null);
+                Response r = invoker.executeCommand(cmdReq);
                 System.out.println(r.message());
             }
             return new Response("Script executed");
         } catch (FileNotFoundException e) {
             return new Response("Error: Script file not found.");
         } finally {
-            // Восстанавливаем оригинальный Scanner, чтобы интерактивный режим снова работал
             reader.setScanner(originalScanner);
         }
     }

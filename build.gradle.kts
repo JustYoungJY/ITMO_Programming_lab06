@@ -19,6 +19,9 @@ dependencies {
     // Библиотека для поддержки Java Time API (ZonedDateTime и др.)
     implementation("com.fatboyindustrial.gson-javatime-serialisers:gson-javatime-serialisers:1.1.1")
     implementation("com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.14.2")
+
+    // Зависимость для Gson (используем для сериализации Request/Response по сети)
+    implementation("com.google.code.gson:gson:2.10")
 }
 
 tasks.test {
@@ -26,7 +29,8 @@ tasks.test {
 }
 
 application {
-    mainClass.set("app.Main")
+    // Для сборки серверного модуля, точка входа – ServerMain.
+    mainClass.set("app.server.ServerMain")
 }
 
 tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
