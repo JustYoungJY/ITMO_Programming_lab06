@@ -35,12 +35,16 @@ public class ClientScriptExecutor {
         }
         try (Scanner scriptScanner = new Scanner(scriptFile)) {
             InputReader originalReader = baseReader.cloneScanner();
-
             baseReader.setScanner(scriptScanner);
 
             while (scriptScanner.hasNextLine()) {
                 String cmdLine = scriptScanner.nextLine().trim();
                 if (cmdLine.isEmpty()) continue;
+
+                if (cmdLine.equalsIgnoreCase("save")) {
+                    System.out.println("Skip 'save': command allowed only on server console.");
+                    continue;
+                }
 
                 if (cmdLine.equalsIgnoreCase("insert") || cmdLine.equalsIgnoreCase("update")) {
                     HumanBeing human = factory.createHumanBeing();

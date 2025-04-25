@@ -50,6 +50,11 @@ public class ClientMain {
                     ? Arrays.asList(parts[1].split("\\s+"))
                     : Collections.emptyList();
 
+            if (commandName.equalsIgnoreCase("save")) {
+                System.out.println("Error: 'save' can be executed only on the server console.");
+                continue;
+            }
+
             // script command
             if (commandName.equalsIgnoreCase("execute_script")) {
                 if (argsList.isEmpty()) {

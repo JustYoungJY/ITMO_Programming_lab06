@@ -21,6 +21,9 @@ public class Client {
     private final Gson gson;
     private SocketChannel socketChannel;
 
+    private static final int MAX_RECONNECT_ATTEMPTS = 5;
+    private static final int RECONNECT_DELAY_MILLIS = 5000;
+
     public Client(String host, int port) {
         this.host = host;
         this.port = port;
@@ -50,65 +53,83 @@ public class Client {
     }
 
     public Response sendRequest(Request request) throws IOException {
-        String jsonRequest = NetworkUtil.toJson(request) + "\n";
-        ByteBuffer writeBuffer = ByteBuffer.wrap(jsonRequest.getBytes(StandardCharsets.UTF_8));
+        // Serialize request to JSON bytes
+        byte[] dataBytes = NetworkUtil.toJson(request).getBytes(StandardCharsets.UTF_8);
 
-        try {
-            // Request to socket
-            while (writeBuffer.hasRemaining()) {
-                socketChannel.write(writeBuffer);
-            }
+        // Prepare length prefix
+        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        lengthBuffer.putInt(dataBytes.length);
+        lengthBuffer.flip();
 
-            ByteBuffer readBuffer = ByteBuffer.allocate(4096);
-            int bytesRead = socketChannel.read(readBuffer);
+        // Data buffer for JSON payload
+        ByteBuffer dataBuffer = ByteBuffer.wrap(dataBytes);
 
-            while (bytesRead == 0) {
-                bytesRead = socketChannel.read(readBuffer);
-            }
-            // If bytesRead < 0 the connection is terminated.
-            if (bytesRead < 0) {
-                throw new IOException("Server closed the connection");
-            }
-
-            readBuffer.flip();
-            String jsonResponse = StandardCharsets.UTF_8.decode(readBuffer).toString().trim();
-            return NetworkUtil.fromJson(jsonResponse, Response.class);
-
-        } catch (IOException e) {
-            System.err.println("Connection lost or server unavailable: " + e.getMessage());
-            // Reconnecting...
+        int attempt = 0; // reconnect attempt counter
+        while (true) {
             try {
-                System.out.println("Trying to reconnect...");
-                connect();
-                System.out.println("Reconnected. Resending the request...");
+                // Send length prefix
+                writeFully(lengthBuffer);
+                // Send data payload
+                writeFully(dataBuffer);
 
-                return resendRequest(request);
-            } catch (IOException re) {
-                throw new IOException("Failed to reconnect to server.", re);
+                return receiveResponse();
+            } catch (IOException e) {
+                attempt++;
+                if (attempt > MAX_RECONNECT_ATTEMPTS) {
+                    throw new IOException("Failed to reconnect after " + MAX_RECONNECT_ATTEMPTS + " attempts", e);
+                }
+                System.err.println("Connection lost or server unavailable: " + e.getMessage());
+                System.out.println("Attempting to reconnect (" + attempt + "/" + MAX_RECONNECT_ATTEMPTS + ")...");
+                try {
+                    Thread.sleep(RECONNECT_DELAY_MILLIS);
+                    connect();
+                    System.out.println("Reconnected. Resending the request...");
+
+                    // After successful reconnect, reset buffers and retry
+                    lengthBuffer.rewind();
+                    dataBuffer.rewind();
+                } catch (IOException re) {
+                    System.err.println("Reconnect attempt failed: " + re.getMessage());
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    throw new IOException("Reconnect interrupted", ie);
+                }
             }
         }
     }
 
-    private Response resendRequest(Request request) throws IOException {
-        String jsonRequest = NetworkUtil.toJson(request) + "\n";
-        ByteBuffer writeBuffer = ByteBuffer.wrap(jsonRequest.getBytes(StandardCharsets.UTF_8));
-
-        while (writeBuffer.hasRemaining()) {
-            socketChannel.write(writeBuffer);
+    // Write all bytes in buffer to channel
+    private void writeFully(ByteBuffer buffer) throws IOException {
+        while (buffer.hasRemaining()) {
+            socketChannel.write(buffer);
         }
+    }
 
-        ByteBuffer readBuffer = ByteBuffer.allocate(4096);
-        int bytesRead = socketChannel.read(readBuffer);
-        while (bytesRead == 0) {
-            bytesRead = socketChannel.read(readBuffer);
-        }
-        if (bytesRead < 0) {
-            throw new IOException("Server closed the connection after reconnect");
-        }
+    // Receive a length-prefixed response
+    private Response receiveResponse() throws IOException {
+        ByteBuffer lengthBuffer = ByteBuffer.allocate(4);
+        readFromChannel(lengthBuffer);
+        lengthBuffer.flip();
 
-        readBuffer.flip();
-        String jsonResponse = StandardCharsets.UTF_8.decode(readBuffer).toString().trim();
+        int messageLength = lengthBuffer.getInt();
+        ByteBuffer dataBuffer = ByteBuffer.allocate(messageLength);
+
+        readFromChannel(dataBuffer);
+        dataBuffer.flip();
+
+        // Decode JSON and deserialize
+        String jsonResponse = StandardCharsets.UTF_8.decode(dataBuffer).toString();
         return NetworkUtil.fromJson(jsonResponse, Response.class);
+    }
+
+    // Helper to read the full buffer from channel
+    private void readFromChannel(ByteBuffer buffer) throws IOException {
+        while (buffer.hasRemaining()) {
+            int bytesRead = socketChannel.read(buffer);
+            if (bytesRead == -1) {
+                throw new IOException("Server has closed the connection");
+            }
+        }
     }
 
     public void close() {
